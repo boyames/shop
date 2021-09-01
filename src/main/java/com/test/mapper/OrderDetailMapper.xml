@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.mapper.OrderDetailMapper">
+    <!--查询订单中的商品信息-->
+    <select id="selectOrderDetailList" resultType="OrderDetail">
+        select distinct sku_id as skuId,price as buyprice,buy_num as num from cart_goods_view
+        where user_id=#{userId}
+        and
+        sku_id in
+        <foreach collection="list" open="(" close=")" separator="," item="orderDetail">
+            #{orderDetail.skuId}
+        </foreach>
+    </select>
+
+    <!--添加订单详情到详情表-->
+    <insert id="addOrderDetailList">
+        insert into order_detail(details_id,order_id,sku_id,buy_price,num)
+        values
+        <foreach collection="list" separator="," item="orderDetail">
+            (null,#{orderId},#{orderDetail.skuId},#{orderDetail.buyPrice},#{orderDetail.num})
+        </foreach>
+    </insert>
+</mapper>

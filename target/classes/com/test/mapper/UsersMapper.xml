@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.mapper.UsersMapper">
+    <!--添加用户 并且返回自增的用户id-->
+    <insert id="addUser" parameterType="Users">
+        <!--获取刚添加的用户的用户id-->
+        <selectKey keyProperty="user_id" resultType="int" order="AFTER">
+            select LAST_INSERT_ID();
+        </selectKey>
+        insert into users(uname,upwd) values (#{uname},#{upwd})
+    </insert>
+    <!--查询用户名是否存在-->
+    <select id="isExistsUname" parameterType="String" resultType="int">
+        select count(*) from users where uname=#{uname}
+    </select>
+
+    <!--判断登入的用户是否存在 存在 返回的是用户的信息和购物车信息-->
+    <select id="selectUserByUnameAndUpwd" parameterType="Users" resultMap="userCartMap">
+        select users.user_id,uname,upwd,cart_id,total_price,total_num from users,cart where users.user_id=cart.user_id
+        and uname=#{uname} and upwd=#{upwd}
+    </select>
+    
+    <resultMap id="userCartMap" type="Users">
+        <id column="user_id" property="userId"/>
+        <result column="uname" property="uname"/>
+        <result column="upwd" property="upwd"/>
+        <association property="cart" javaType="Cart">
+            <id column="cart_id" property="cartId"/>
+            <result column="user_id" property="userId"/>
+            <result column="total_price" property="totalPrice"/>
+            <result column="total_num" property="totalNum"/>
+        </association>
+    </resultMap>
+    
+
+</mapper>

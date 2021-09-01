@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 1.配置需要扫描的包 -->
+    <context:component-scan base-package="com.test" />
+
+    <!-- 2.导入db.properties文件-->
+    <context:property-placeholder location="classpath:db.properties" />
+
+    <!-- 3.创建数据源对象 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${driverClass}" />
+        <property name="jdbcUrl" value="${url}" />
+        <property name="user" value="${uname}" />
+        <property name="password" value="${pwd}" />
+    </bean>
+
+    <!-- 4.创建sqlSessionFactory对象 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:sqlMapConfig.xml" />
+    </bean>
+
+    <!-- 5. 创建ItemsMapper的代理 替代dao层的操作 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+      <property name="basePackage" value="com.test.mapper" />
+    </bean>
+
+    <!-- 配置solr客户端对象 -->
+    <bean id="httpSolrClient" class="org.apache.solr.client.solrj.impl.HttpSolrClient">
+        <constructor-arg name="builder" value="http://localhost:8983/solr/goods" />
+    </bean>
+
+    <!-- 事务管理器 -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <!-- 为连接点指定事务属性 -->
+            <tx:method name="addOrder" isolation="DEFAULT" propagation="REQUIRED" rollback-for="Exception"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <!-- 切入点配置 -->
+        <aop:pointcut expression="execution(* com.test.service.impl.OrderService.addOrder(..))" id="point"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="point"/>
+    </aop:config>
+
+
+</beans>

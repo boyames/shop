@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.mapper.CartMapper">
+    <!--给用户添加一个购物车-->
+    <insert id="addCart" parameterType="Cart">
+        insert into values (null,#{userId},#{totalPrice},#{totalNum})
+    </insert>
+    <!--添加商品到购物车后 购物车的商品种类+1-->
+    <update id="updateCart" parameterType="int">
+        update cart set total_num=total_num+1 where cart_id=#{cart_id}
+    </update>
+
+    <!--从购物车删除商品后 购物车的商品种类-1-->
+    <update id="updateCart2" parameterType="int">
+        update cart set total_num=total_num-1 where cart_id=#{cart_id}
+    </update>
+
+    <!--返回指定购物车的商品总数-->
+    <select id="selectCartTotalNum" parameterType="int" resultType="int">
+        select total_num from cart where cart_id=#{cartId}
+    </select>
+
+    <resultMap id="cartMap" type="Cart">
+        <!--组装cart的基本信息-->
+        <id column="cart_id" property="cartId"/>
+        <result column="user_id" property="userId"/>
+        <result column="total_price" property="totalPrice"/>
+        <result column="total_num" property="totalNum"/>
+        <!--组装购物车中的商品信息-->
+        <collection property="cartItemList" ofType="CartItem">
+            <!--商品基本信息-->
+            <id column="sku_id" property="skuId"/>
+            <result column="goods_name" property="goodsName"/>
+            <result column="goods_img" property="goodsImg"/>
+            <result column="price" property="price"/>
+            <result column="buy_num" property="buyNum"/>
+            <!--商品规格信息-->
+            <collection property="attrNameValueList" ofType="AttrNameValue">
+                <id column="attr_name_id" property="attrNameId"/>
+                <result column="attr_name" property="attrName"/>
+                <result column="attr_value_id" property="attrValueId"/>
+                <result column="attr_value"  property="attrValue"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <!--查询指定购物车的详细信息-->
+    <select id="selectCartList" resultMap="cartMap">
+        select * from cart_goods_view where
+        <foreach collection="list" item="goodsSku" separator="or">
+            cart_id=#{cartId}
+            and concat(attr_name_id,":",attr_value_id) in (${goodsSku.skuProperties})
+            and sku_id=#{goodsSku.skuId}
+        </foreach>
+    </select>
+
+</mapper>

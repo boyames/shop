@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.mapper.AddressMapper">
+    <!--查询某用户的地址信息-->
+    <select id="selectAddress" parameterType="int" resultType="Address">
+        select address_id as addressId,user_id as userId,country,province,
+               city,town,address,mobile,consignee,is_default as idDefault
+        from address where user_id=#{userId};
+    </select>
+    <!--查询指定订单地址-->
+    <select id="selectAddressByOrderId" parameterType="int" resultType="Address">
+        select address.address_id as addressId,address.user_id as userId,country,province,
+               city,town,address,address.mobile,address.consignee,is_default as idDefault
+        from address,orders where address.address_id=orders.address_id
+        and order_id=#{orderId}
+    </select>
+</mapper>

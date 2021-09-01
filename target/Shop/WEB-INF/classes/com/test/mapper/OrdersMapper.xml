@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.mapper.OrdersMapper">
+
+    <!-- 添加订单的基本信息，并返回订单号-->
+    <insert id="addOrder" parameterType="Order">
+        <selectKey keyProperty="orderId" order="AFTER" resultType="int">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into Orders(order_id,user_id,os_id,address_id,order_amount)
+        values (null,#{userId},1,#{addressId},#{orderAmount})
+
+    </insert>
+    <!--修改订单状态-->
+    <update id="updateOrderState" parameterType="int">
+        update orders set os_id=2 where order_id=#{orderId}
+    </update>
+
+    <!--组装订单的基本信息-->
+    <resultMap id="orderMap" type="Order">
+        <id column="order_id" property="orderId"/>
+        <result column="user_id" property="userId"/>
+        <result column="order_amount" property="orderAmount"/>
+        <result column="add_time" property="addTime"/>
+        <!--组装订单的状态-->
+        <association property="orderState" javaType="OrderState">
+            <id column="os_id" property="osId"/>
+            <result column="state_desc" property="stateDesc"/>
+        </association>
+        <!--组装订单的详情-->
+        <collection property="orderDetailList" ofType="OrderDetail">
+            <id column="details_id" property="detailsId"/>
+            <result column="orderId" property="orderId"/>
+            <result column="sku_id" property="skuId"/>
+            <result column="buy_price" property="buyPrice"/>
+            <result column="num" property="num"/>
+            <result column="goods_name" property="goodsName"/>
+            <result column="goods_img" property="goodsImg"/>
+            <collection property="attrNameValueList" ofType="AttrNameValue">
+                <id column="attr_name_id" property="attrNameId"/>
+                <result column="attr_name" property="attrName"/>
+                <result column="attr_value_id" property="attrValueId"/>
+                <result column="attr_value"  property="attrValue"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <!--查询指定用户的所有订单信息-->
+    <select id="selectOrderList" parameterType="int" resultMap="orderMap">
+        select * from order_goods_view where user_id=#{userId}
+    </select>
+</mapper>

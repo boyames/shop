@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.mapper.CategoryMapper">
+
+    <!--组装复杂对象 category-->
+    <resultMap id="categoryMap" type="Category">
+        <!--组装当前类别对象的基本属性-->
+        <id property="cid" column="cid"/>
+        <result property="ctitle" column="ctitle"/>
+        <result property="parentId" column="parent_id"/>
+        <!--组装当前类别的子类别-->
+        <collection property="subCategoryList" ofType="Category">
+            <id property="cid" column="sub_cid"/>
+            <result property="ctitle" column="sub_title"/>
+            <result property="parentId" column="sub_parent_id"/>
+        </collection>
+    </resultMap>
+
+    <!--查询所有的类别 以及对应的子类别-->
+    <select id="selectCategoryList" resultMap="categoryMap">
+        SELECT a.cid,a.ctitle, a.parent_id,
+               b.cid AS sub_cid,b.ctitle AS sub_title,b.parent_id AS sub_parent_id
+        FROM category a
+                 INNER JOIN
+             category b
+             ON b.parent_id=a.cid ORDER BY a.order_num
+    </select>
+</mapper>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.mapper.GoodsSkuMapper">
+    <select id="selectGoodsSku" resultType="GoodsSku">
+        select sku_id as skuId,goods_id as goodsId,price,num,sku_name as skuName,sku_properties as skuProperties
+        from goods_sku where goods_id=#{goodsId} and sku_properties=#{skuProperties}
+    </select>
+    <!--查询指定购物车中的所有的sku商品属性信息-->
+    <select id="selectGoodsSkuByCartId" parameterType="int" resultType="GoodsSku">
+        select goods_sku.sku_id as skuId,sku_properties as skuProperties
+        from cart_info inner join goods_sku
+        on cart_info.sku_id=goods_sku.sku_id
+        and cart_id=#{cartId}
+    </select>
+    
+</mapper>
